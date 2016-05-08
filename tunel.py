@@ -6,6 +6,7 @@ import numpy as np
 from scipy import integrate, linalg
 import matplotlib
 from matplotlib import pyplot as plt
+import os
 
 # customizing plots
 plt.style.use('classic')
@@ -51,37 +52,57 @@ def plot_cp(x, cpu, cpl, aoa):
 
 class CpPlot(object):
     def __init__(self):
-        self.fig, self.ax = plt.subplots(figsize=(6, 4), dpi=100)
+        self.fig = plt.figure(figsize=(6, 4), dpi=100)
+
+        c = 0.05
+        self.left, self.width = 0.15 , 0.8
+        self.rect1 = [self.left, 0.3+c, self.width, 0.6-c]
+        self.rect2 = [self.left, 0.05, self.width, 0.2+c]
+
+        axprops = dict(xticks=[], yticks=[])
+        self.ax1 = self.fig.add_axes(self.rect1)
+        self.ax2 = self.fig.add_axes(self.rect2, sharex=self.ax1, **axprops)
 
     def plot(self, x, cpu, cpl, aoa):
-        lines = []
+        # load geometry from data file
+        # data generated using naca.py
+        # https://github.com/dgorissen/naca
+        #
+        xg, yg = np.loadtxt(os.path.join(os.path.dirname(__file__),
+                             'data/naca0018-geometry.dat'), delimiter=' ').T
 
-        self.ax.set_xlim(0, 1)
-        self.ax.set_ylim(-3, 1)
+        self.ax1.set_xlim(0, 1)
+        self.ax1.set_ylim(1, -3)
 
-        self.ax.set_title("$C_{p}$ with $AOA = %s^\circ$" % (aoa))
-        self.ax.set_xlabel('x position in the airfoil')
-        self.ax.set_ylabel('$C_{p}$')
+        self.ax1.set_title("$C_{p}$ with $AOA = %s^\circ$" % (aoa))
+        self.ax1.set_ylabel('$C_{p}$')
+        self.ax1.set_xticks(np.arange(0, 11, 2)/10)
+        self.ax2.set_xticklabels(np.arange(0, 11, 2)/10)
 
-        self.ax.invert_yaxis()
 
-        self.ax.grid()
+        self.ax1.grid()
 
-        l, = self.ax.plot(x, cpu, 'b.--', label='upper')
-        lines.append(l)
+        self.ax2.set_aspect('equal')
+        self.ax2.spines['right'].set_visible(False)
+        self.ax2.spines['left'].set_visible(False)
+        self.ax2.spines['bottom'].set_visible(False)
+        self.ax2.spines['top'].set_visible(False)
+        self.ax2.set_xticklabels([])
+        self.ax2.set_yticklabels([])
+        self.ax2.get_xaxis().set_visible(False)
+        self.ax2.get_yaxis().set_visible(False)
 
-        l, = self.ax.plot(x, cpl, 'r.--', label='lower')
-        lines.append(l)
+        self.ax1.plot(x, cpu, 'b.--', label='upper')
+        self.ax1.plot(x, cpl, 'r.--', label='lower')
 
-        self.ax.legend(loc='lower right')
+        # index 300 is (0.0, 0.0)
+        self.ax2.plot(xg[:301:], yg[:301:]-1, color='b', linestyle='-', linewidth=1)
+        self.ax2.plot(xg[300::], yg[300::]-1, color='r', linestyle='-', linewidth=1)
 
-        return lines
+        self.ax1.legend(loc='upper right')
 
 
 if __name__ == "__main__":
-    # imports
-    import os
-
     # lab data
     # here my former problem
     # http://stackoverflow.com/questions/17307299/
