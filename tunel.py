@@ -23,7 +23,7 @@ class VoltagePlot(object):
         lines = []
 
         self.ax.set_xlim(0, 1)
-        self.ax.set_ylim(0, 17)
+        self.ax.set_ylim(0, 15)
 
         self.ax.set_title('Voltages with $AOA = {0}^\circ$'.format(aoa))
         self.ax.set_xlabel(r'$x/c$ position in the airfoil')
@@ -74,7 +74,7 @@ class CpPlot(object):
                              'data/naca0018-geometry.dat'), delimiter=' ').T
 
         self.ax1.set_xlim(0, 1)
-        self.ax1.set_ylim(1, -3)
+        self.ax1.set_ylim(1, -4)
 
         self.ax1.set_title("$C_{p}$ at $AOA = %s^\circ$" % (aoa))
         self.ax1.set_ylabel('$C_{p}$')
@@ -172,6 +172,12 @@ if __name__ == "__main__":
     tunel_data = data[::, :-1:]
     inf_data = data[::, -1]
 
+    # offset calibration
+    offset = np.amin(tunel_data[1::])
+    print(offset)
+    tunel_data[1::] -= offset
+    inf_data -= offset
+
     # plotting voltages and cp for different AOA
     l = [0, 7, 14, 21]
 
@@ -234,6 +240,12 @@ if __name__ == "__main__":
     f = os.path.join(os.path.dirname(__file__), 'data/naca0018at7.cp')
     data_lol = np.loadtxt(f, delimiter=',', dtype=float).T
 
+    l = [0, 7, 14, 21]
+    i = 7
+
+    cpu, cpl = calculate_cp(tunel_data[l.index(i) + 1],
+                tunel_data[l.index(i) + 5], inf_data[l.index(i) + 5])
+
     fig, ax = plt.subplots(figsize=(6, 5), dpi=100)
     ax.set_xlim(0.0, 1.0)
     ax.set_ylim(-3, 1.3)
@@ -249,9 +261,6 @@ if __name__ == "__main__":
     ax.plot(tunel_data[0], cpu, 'b.--', label='upper')
     ax.plot(tunel_data[0], cpl, 'r.--', label='lower')
 
-    l = [0, 7, 14, 21]
-    i = 3
-
     ii = int(data_lol.shape[1] / 2)
     ax.plot(data_lol[0, ii::], data_lol[1, ii:0:-1], 'k--', label='theo')
     ax.plot(data_lol[0, ii::], data_lol[1, ii::], 'k--')
@@ -259,7 +268,7 @@ if __name__ == "__main__":
     ax.legend(loc='upper right')
 
     plt.savefig(os.path.join(os.path.dirname(__file__),
-                'plots/compared-cp-at-aoa{0}'.format(21) + '.png'))
+                'plots/compared-cp-at-aoa{0}'.format(7) + '.png'))
 
     l = [0, 7, 14, 21]
     cl_a = []
