@@ -142,7 +142,7 @@ class ClaPlot(object):
         # it is convenient to use poly1d objects for dealing with polynomials
         p = np.poly1d(z)
 
-        self.ax.set_ylim(-0.5, 1.5)
+        self.ax.set_ylim(-0.5, 1.7)
         self.ax.set_xlim(-5, 22)
 
         self.ax.set_title(r'$c_{l}-\alpha$')
@@ -163,126 +163,131 @@ class ClaPlot(object):
 
         return lines
 
+def plot_cp_compared(x, cpu, cpl, aoa):
+    p = ComparedPlot()
+    return p.plot(x, cpu, cpl, aoa)
+
+class ComparedPlot(object):
+
+    def __init__(self):
+        self.fig, self.ax = plt.subplots(figsize=(6, 7), dpi=100)
+
+    def plot(self, x, cpu, cpl, aoa):
+        lines = []
+
+        # now we compare reference (numerical) data with the experimental ones
+        # data taken from Xfoil
+        f = os.path.join(os.path.dirname(__file__),
+                         'aux_data/naca0018-cpx-aoa{}.txt'.format(aoa))
+        numerical_data = np.loadtxt(f, dtype=float).T
+
+        aoa_list = [0, 7, 14, 21]
+
+        cpu, cpl = calculate_cp(tunel_data[aoa_list.index(aoa) + 1],
+                    tunel_data[aoa_list.index(aoa) + 5],
+                               inf_data[aoa_list.index(aoa) + 5])
+
+        self.ax.set_xlim(0.0, 1.0)
+        if aoa == 0:
+            self.ax.set_ylim(-4, 1.5)
+        else:
+            self.ax.set_ylim(np.amin(numerical_data[1]) - 0.3, 1.5)
+
+        self.ax.set_title("Theorical $C_{p}$ with $AOA = %d^\circ$ vs. data"
+                          % (aoa))
+        self.ax.set_xlabel(r'$x/c$ position in the airfoil')
+        self.ax.set_ylabel('$C_{p}$')
+
+        self.ax.invert_yaxis()
+
+        #self.ax.grid()
+
+        l, = self.ax.plot(tunel_data[0], cpu, 'bx--', markersize=8,
+                          label='upper')
+        lines.append(l)
+        l, = self.ax.plot(tunel_data[0], cpl, 'rx--', markersize=8,
+                          label='lower')
+        lines.append(l)
+
+        ii = int(numerical_data.shape[1] / 2)
+        l, = self.ax.plot(numerical_data[0, ii::], numerical_data[1, ii:0:-1],
+                          color='k', linestyle='-', linewidth=0.5,
+                          label=r'numerical at $Re = Inviscous$')
+        lines.append(l)
+        l, = self.ax.plot(numerical_data[0, ii::], numerical_data[1, ii::],
+                          color='k', linestyle='-', linewidth=0.5)
+        lines.append(l)
+        l, = self.ax.plot(numerical_data[0, ii::], numerical_data[1, ii::]*0+1,
+                          color='g', linestyle='--', linewidth=2,
+                          label='stagnation point')
+        lines.append(l)
+
+        self.ax.legend(loc='upper right')
+
+        return lines
+
 if __name__ == "__main__":
     # lab data
     # here my former problem
     # http://stackoverflow.com/questions/17307299/
-    # filling-missing-values-using-numpy-genfromtxt
     #
     f = os.path.join(os.path.dirname(__file__), 'data/naca0018lab.csv')
     data = np.loadtxt(f, delimiter=',', dtype=float)
-    tunel_data = data[::, :-1:]
+    tunel_data = data[::, :-1:] # not taking p_inff
     inf_data = data[::, -1]
+
 
     # offset calibration
     offset = np.amin(tunel_data[1::])
     tunel_data[1::] -= offset
     inf_data -= offset
 
-    # plotting voltages and cp for different AOA
-    l = [0, 7, 14, 21]
 
-    for i in l:
-        plot_voltaje(tunel_data[0], tunel_data[l.index(i) + 1],
-                     tunel_data[l.index(i) + 5], i)
+    # plotting voltages and cp for different AOA
+    aoa = [0, 7, 14, 21]
+
+    for i in aoa:
+        plot_voltaje(tunel_data[0], tunel_data[aoa.index(i) + 1],
+                     tunel_data[aoa.index(i) + 5], i)
         plt.savefig(os.path.join(os.path.dirname(__file__),
                     'plots/voltage-at-aoa{0}'.format(i) + '.png'))
 
-    for i in l:
-        cpu, cpl = calculate_cp(tunel_data[l.index(i) + 1],
-                   tunel_data[l.index(i) + 5], inf_data[l.index(i) + 5])
+
+    # plotting voltages and cp for different AOA
+    aoa = [0, 7, 14, 21]
+
+    for i in aoa:
+        cpu, cpl = calculate_cp(tunel_data[aoa.index(i) + 1],
+                   tunel_data[aoa.index(i) + 5], inf_data[aoa.index(i) + 5])
 
         plot_cp(tunel_data[0], cpu, cpl, i)
         plt.savefig(os.path.join(os.path.dirname(__file__),
                     'plots/cp-at-aoa{0}'.format(i) + '.png'))
 
-    #############################################
-    # now we compare reference data with the experimental ones
-    # data taken from
-    # Abbot and von Doenhoff, "Theory of Wing Sections," 1949 data
-    # page 325m, NACA 0018 cp for aoa = 0
-    f = os.path.join(os.path.dirname(__file__), 'data/naca0018at0-theo.csv')
-    data = np.loadtxt(f, delimiter=',', dtype=float)
-    xtheo = data[0] / 100 # we what them to be betweet 0 and 1
-    voverVsquared = data[1]
 
-    cp = 1 - voverVsquared
-
-    l = [0, 7, 14, 21]
-    i = 0
-
-    cpu, cpl = calculate_cp(tunel_data[l.index(i) + 1],
-                tunel_data[l.index(i) + 5], inf_data[l.index(i) + 5])
-
-    fig, ax = plt.subplots(figsize=(6, 5), dpi=100)
-    ax.set_xlim(0.0, 1.0)
-    ax.set_ylim(-3, 1.3)
-
-    ax.set_title("Theorical $C_{p}$ with $AOA = 0^\circ$ vs. data")
-    ax.set_xlabel(r'$x/c$ position in the airfoil')
-    ax.set_ylabel('$C_{p}$')
-
-    ax.invert_yaxis()
-
-    ax.grid()
-
-    ax.plot(tunel_data[0], cpu, 'b.--', label='upper')
-    ax.plot(tunel_data[0], cpl, 'r.--', label='lower')
-    ax.plot(xtheo, cp, 'kx--', label='theo')
-
-    ax.legend(loc='upper right')
-
-    plt.savefig(os.path.join(os.path.dirname(__file__),
-                'plots/compared-cp-at-aoa{0}'.format(i) + '.png'))
-
-    #############################################
-    # now we compare reference data with the experimental ones
-    # data taken from XFoil
-    f = os.path.join(os.path.dirname(__file__), 'data/naca0018at7.cp')
-    data_lol = np.loadtxt(f, delimiter=',', dtype=float).T
-
-    l = [0, 7, 14, 21]
-    i = 7
-
-    cpu, cpl = calculate_cp(tunel_data[l.index(i) + 1],
-                tunel_data[l.index(i) + 5], inf_data[l.index(i) + 5])
-
-    fig, ax = plt.subplots(figsize=(6, 5), dpi=100)
-    ax.set_xlim(0.0, 1.0)
-    ax.set_ylim(-3, 1.3)
-
-    ax.set_title("Theorical $C_{p}$ with $AOA = 7^\circ$ vs. data")
-    ax.set_xlabel(r'$x/c$ position in the airfoil')
-    ax.set_ylabel('$C_{p}$')
-
-    ax.invert_yaxis()
-
-    ax.grid()
-
-    ax.plot(tunel_data[0], cpu, 'b.--', label='upper')
-    ax.plot(tunel_data[0], cpl, 'r.--', label='lower')
-
-    ii = int(data_lol.shape[1] / 2)
-    ax.plot(data_lol[0, ii::], data_lol[1, ii:0:-1], 'k--', label='theo')
-    ax.plot(data_lol[0, ii::], data_lol[1, ii::], 'k--')
-
-    ax.legend(loc='upper right')
-
-    plt.savefig(os.path.join(os.path.dirname(__file__),
-                'plots/compared-cp-at-aoa{0}'.format(7) + '.png'))
-
-    l = [0, 7, 14, 21]
+    # plotting cp vs. alpha
+    aoa = [0, 7, 14, 21]
     cl_a = []
 
-    for i in l:
-        cpu, cpl = calculate_cp(tunel_data[l.index(i) + 1],
-                   tunel_data[l.index(i) + 5], inf_data[l.index(i) + 5])
-
+    for i in aoa:
+        cpu, cpl = calculate_cp(tunel_data[aoa.index(i) + 1],
+                   tunel_data[aoa.index(i) + 5], inf_data[aoa.index(i) + 5])
         cl_a.append(calculate_cl(tunel_data[0], cpu, cpl, i))
 
-    plot_cla(l, cl_a)
+    plot_cla(aoa, cl_a)
     plt.savefig(os.path.join(os.path.dirname(__file__),
                 'plots/cl-alpha' + '.png'))
+
+    # plotting experimental cp compared with numerical one at Re=3e+5
+    aoa = [0, 7, 14, 21]
+
+    for i in aoa:
+        cpu, cpl = calculate_cp(tunel_data[aoa.index(i) + 1],
+                   tunel_data[aoa.index(i) + 5], inf_data[aoa.index(i) + 5])
+
+        plot_cp_compared(tunel_data[0], cpu, cpl, i)
+        plt.savefig(os.path.join(os.path.dirname(__file__),
+                    'plots/comapared-cp-at-aoa{0}'.format(i) + '.png'))
 
     #plt.show()
 
