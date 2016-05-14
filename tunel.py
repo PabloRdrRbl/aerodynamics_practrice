@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 import os
 
 # customizing plots
-plt.style.use('classic')
+#plt.style.use('classic')
 
 def plot_voltaje(x, yu, yl, aoa):
     v = VoltagePlot()
@@ -59,9 +59,9 @@ class CpPlot(object):
         self.rect1 = [self.left, 0.3+c, self.width, 0.6-c]
         self.rect2 = [self.left, 0.05, self.width, 0.2+c]
 
-        axprops = dict(xticks=[], yticks=[])
+        self.axprops = dict(xticks=[], yticks=[])
         self.ax1 = self.fig.add_axes(self.rect1)
-        self.ax2 = self.fig.add_axes(self.rect2, sharex=self.ax1, **axprops)
+        self.ax2 = self.fig.add_axes(self.rect2, sharex=self.ax1, **self.axprops)
 
     def plot(self, x, cpu, cpl, aoa):
         lines = []
@@ -79,11 +79,11 @@ class CpPlot(object):
         self.ax1.set_title("$C_{p}$ at $AOA = %s^\circ$" % (aoa))
         self.ax1.set_ylabel('$C_{p}$')
         self.ax1.set_xlabel(r'$x/c$ position in the airfoil')
+
         self.ax1.set_xticks(np.arange(0, 11, 2)/10)
-        self.ax2.set_xticklabels(np.arange(0, 11, 2)/10)
-
-
         self.ax1.grid()
+
+        self.ax2.set_xticklabels(np.arange(0, 11, 2)/10)
 
         self.ax2.set_aspect('equal')
         self.ax2.spines['right'].set_visible(False)
@@ -115,6 +115,7 @@ class CpPlot(object):
 
         return lines
 
+
 def calculate_cl(x, cpu, cpl, aoa):
     # not dividing by c because it's x/c realy
     # doing cl = cn * cos(aoa)
@@ -122,9 +123,11 @@ def calculate_cl(x, cpu, cpl, aoa):
 
     return cl
 
+
 def plot_cla(aoa, cl):
     p = ClaPlot()
     return p.plot(aoa, cl)
+
 
 class ClaPlot(object):
     def __init__(self):
@@ -163,9 +166,11 @@ class ClaPlot(object):
 
         return lines
 
+
 def plot_cp_compared(x, cpu, cpl, aoa):
     p = ComparedPlot()
     return p.plot(x, cpu, cpl, aoa)
+
 
 class ComparedPlot(object):
 
@@ -226,6 +231,7 @@ class ComparedPlot(object):
 
         return lines
 
+
 if __name__ == "__main__":
     # lab data
     # here my former problem
@@ -260,7 +266,8 @@ if __name__ == "__main__":
         cpu, cpl = calculate_cp(tunel_data[aoa.index(i) + 1],
                    tunel_data[aoa.index(i) + 5], inf_data[aoa.index(i) + 5])
 
-        plot_cp(tunel_data[0], cpu, cpl, i)
+        plot_cp(tunel_data[0], cpu, cpl, i,
+                plot_cp_compared(tunel_data[0], cpu, cpl, i))
         plt.savefig(os.path.join(os.path.dirname(__file__),
                     'plots/cp-at-aoa{0}'.format(i) + '.png'))
 
