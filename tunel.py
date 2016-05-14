@@ -31,11 +31,11 @@ class VoltagePlot(object):
 
         self.ax.grid()
 
-        l, = self.ax.plot(x, yu, 'b.--', label='upper')
+        l, = self.ax.plot(x, yu, 'bx--', label='upper')
+        lines.append(l)
+        l, = self.ax.plot(x, yl, 'rx--', label='lower')
         lines.append(l)
 
-        l, = self.ax.plot(x, yl, 'r.--', label='lower')
-        lines.append(l)
 
         self.ax.legend(loc='lower right')
 
@@ -100,12 +100,15 @@ class CpPlot(object):
         l, = self.ax1.plot(x, cpl, 'rx--', label='lower')
         lines.append(l)
 
-        l, = self.ax2.plot((xg[300::] + 0.01) * 0.99, yg[300::] * 0 - 1, color='k', linestyle='--', linewidth=1.5)
+        l, = self.ax2.plot((xg[300::] + 0.01) * 0.99, yg[300::] * 0 - 1,
+                           color='k', linestyle='--', linewidth=1.5)
         lines.append(l)
         # index 300 is (0.0, 0.0)
-        l, = self.ax2.plot((xg[:301:] + 0.01) * 0.99, yg[:301:] - 1, color='b', linestyle='-', linewidth=1.5)
+        l, = self.ax2.plot((xg[:301:] + 0.01) * 0.99, yg[:301:] - 1,
+                           color='b', linestyle='-', linewidth=1.5)
         lines.append(l)
-        l, = self.ax2.plot((xg[300::] + 0.01) * 0.99, yg[300::] - 1, color='r', linestyle='-', linewidth=1.5)
+        l, = self.ax2.plot((xg[300::] + 0.01) * 0.99, yg[300::] - 1,
+                           color='r', linestyle='-', linewidth=1.5)
         lines.append(l)
 
         self.ax1.legend(loc='upper right')
@@ -113,19 +116,9 @@ class CpPlot(object):
         return lines
 
 def calculate_cl(x, cpu, cpl, aoa):
-    dx = x[1::] - x[0:-1:]
-
-    dx = np.vstack((dx, dx))
-
-    cp = np.vstack((cpu, cpl))
-
-    p = (cp[:, 1::] + cp[:, 0:-1:]) / 2
-
-    s = np.sum(p * dx, axis=1)
-
     # not dividing by c because it's x/c realy
     # doing cl = cn * cos(aoa)
-    cl = (s[1] - s[0]) * np.cos(aoa * np.pi / 180)
+    cl = (np.trapz(cpl, x) - np.trapz(cpu, x)) * np.cos(aoa * np.pi / 180)
 
     return cl
 
@@ -140,8 +133,14 @@ class ClaPlot(object):
     def plot(self, aoa, cl):
         lines = []
 
-        f = os.path.join(os.path.dirname(__file__), 'data/naca008-atools.txt')
+        f = os.path.join(os.path.dirname(__file__), 'data/cla_data.csv')
         data_atools = np.loadtxt(f, dtype=float).T
+
+        # least squares courve fitting
+        xx = np.linspace(-5, 22, 300)
+        z = np.polyfit(aoa, cl, 3)
+        # it is convenient to use poly1d objects for dealing with polynomials
+        p = np.poly1d(z)
 
         self.ax.set_ylim(-0.5, 1.5)
         self.ax.set_xlim(-5, 22)
@@ -152,9 +151,12 @@ class ClaPlot(object):
 
         self.ax.grid()
 
-        l, = self.ax.plot(aoa, cl, 'bx--', label='experimental $c_{l}$')
+        l, = self.ax.plot(xx, p(xx), 'g-')
         lines.append(l)
-        l, = self.ax.plot(data_atools[0], data_atools[1], 'k--', label='numerical $c_{l}$')
+        l, = self.ax.plot(aoa, cl, 'o', label='experimental $c_{l}$')
+        lines.append(l)
+        l, = self.ax.plot(data_atools[0], data_atools[1], 'k--',
+                          label=r'numerical $Re = 3e+6$')
         lines.append(l)
 
         self.ax.legend(loc='lower right')
@@ -174,7 +176,6 @@ if __name__ == "__main__":
 
     # offset calibration
     offset = np.amin(tunel_data[1::])
-    print(offset)
     tunel_data[1::] -= offset
     inf_data -= offset
 
