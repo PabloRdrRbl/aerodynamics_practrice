@@ -17,7 +17,7 @@ def plot_voltaje(x, yu, yl, aoa):
 
 class VoltagePlot(object):
     def __init__(self):
-        self.fig, self.ax = plt.subplots(figsize=(6, 4), dpi=100)
+        self.fig, self.ax = plt.subplots(figsize=(6, 5), dpi=100)
 
     def plot(self, x, yu, yl, aoa):
         lines = []
@@ -26,7 +26,7 @@ class VoltagePlot(object):
         self.ax.set_ylim(0, 17)
 
         self.ax.set_title('Voltages with $AOA = {0}^\circ$'.format(aoa))
-        self.ax.set_xlabel('x position in the airfoil')
+        self.ax.set_xlabel(r'$x/c$ position in the airfoil')
         self.ax.set_ylabel('voltage meassured')
 
         self.ax.grid()
@@ -52,7 +52,7 @@ def plot_cp(x, cpu, cpl, aoa):
 
 class CpPlot(object):
     def __init__(self):
-        self.fig = plt.figure(figsize=(6, 4), dpi=100)
+        self.fig = plt.figure(figsize=(6, 7), dpi=100)
 
         c = 0.05
         self.left, self.width = 0.15 , 0.8
@@ -64,6 +64,8 @@ class CpPlot(object):
         self.ax2 = self.fig.add_axes(self.rect2, sharex=self.ax1, **axprops)
 
     def plot(self, x, cpu, cpl, aoa):
+        lines = []
+
         # load geometry from data file
         # data generated using naca.py
         # https://github.com/dgorissen/naca
@@ -74,8 +76,9 @@ class CpPlot(object):
         self.ax1.set_xlim(0, 1)
         self.ax1.set_ylim(1, -3)
 
-        self.ax1.set_title("$C_{p}$ with $AOA = %s^\circ$" % (aoa))
+        self.ax1.set_title("$C_{p}$ at $AOA = %s^\circ$" % (aoa))
         self.ax1.set_ylabel('$C_{p}$')
+        self.ax1.set_xlabel(r'$x/c$ position in the airfoil')
         self.ax1.set_xticks(np.arange(0, 11, 2)/10)
         self.ax2.set_xticklabels(np.arange(0, 11, 2)/10)
 
@@ -92,15 +95,71 @@ class CpPlot(object):
         self.ax2.get_xaxis().set_visible(False)
         self.ax2.get_yaxis().set_visible(False)
 
-        self.ax1.plot(x, cpu, 'b.--', label='upper')
-        self.ax1.plot(x, cpl, 'r.--', label='lower')
+        l, = self.ax1.plot(x, cpu, 'bx--', label='upper')
+        lines.append(l)
+        l, = self.ax1.plot(x, cpl, 'rx--', label='lower')
+        lines.append(l)
 
+        l, = self.ax2.plot((xg[300::] + 0.01) * 0.99, yg[300::] * 0 - 1, color='k', linestyle='--', linewidth=1.5)
+        lines.append(l)
         # index 300 is (0.0, 0.0)
-        self.ax2.plot(xg[:301:], yg[:301:]-1, color='b', linestyle='-', linewidth=1)
-        self.ax2.plot(xg[300::], yg[300::]-1, color='r', linestyle='-', linewidth=1)
+        l, = self.ax2.plot((xg[:301:] + 0.01) * 0.99, yg[:301:] - 1, color='b', linestyle='-', linewidth=1.5)
+        lines.append(l)
+        l, = self.ax2.plot((xg[300::] + 0.01) * 0.99, yg[300::] - 1, color='r', linestyle='-', linewidth=1.5)
+        lines.append(l)
 
         self.ax1.legend(loc='upper right')
 
+        return lines
+
+def calculate_cl(x, cpu, cpl, aoa):
+    dx = x[1::] - x[0:-1:]
+
+    dx = np.vstack((dx, dx))
+
+    cp = np.vstack((cpu, cpl))
+
+    p = (cp[:, 1::] + cp[:, 0:-1:]) / 2
+
+    s = np.sum(p * dx, axis=1)
+
+    # not dividing by c because it's x/c realy
+    # doing cl = cn * cos(aoa)
+    cl = (s[1] - s[0]) * np.cos(aoa * np.pi / 180)
+
+    return cl
+
+def plot_cla(aoa, cl):
+    p = ClaPlot()
+    return p.plot(aoa, cl)
+
+class ClaPlot(object):
+    def __init__(self):
+        self.fig, self.ax = plt.subplots(figsize=(6, 5), dpi=100)
+
+    def plot(self, aoa, cl):
+        lines = []
+
+        f = os.path.join(os.path.dirname(__file__), 'data/naca008-atools.txt')
+        data_atools = np.loadtxt(f, dtype=float).T
+
+        self.ax.set_ylim(-0.5, 1.5)
+        self.ax.set_xlim(-5, 22)
+
+        self.ax.set_title(r'$c_{l}-\alpha$')
+        self.ax.set_xlabel('Angle of attack')
+        self.ax.set_ylabel(r'$c_{l}$')
+
+        self.ax.grid()
+
+        l, = self.ax.plot(aoa, cl, 'bx--', label='experimental $c_{l}$')
+        lines.append(l)
+        l, = self.ax.plot(data_atools[0], data_atools[1], 'k--', label='numerical $c_{l}$')
+        lines.append(l)
+
+        self.ax.legend(loc='lower right')
+
+        return lines
 
 if __name__ == "__main__":
     # lab data
@@ -148,12 +207,12 @@ if __name__ == "__main__":
     cpu, cpl = calculate_cp(tunel_data[l.index(i) + 1],
                 tunel_data[l.index(i) + 5], inf_data[l.index(i) + 5])
 
-    fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
+    fig, ax = plt.subplots(figsize=(6, 5), dpi=100)
     ax.set_xlim(0.0, 1.0)
     ax.set_ylim(-3, 1.3)
 
     ax.set_title("Theorical $C_{p}$ with $AOA = 0^\circ$ vs. data")
-    ax.set_xlabel('x position in the airfoil')
+    ax.set_xlabel(r'$x/c$ position in the airfoil')
     ax.set_ylabel('$C_{p}$')
 
     ax.invert_yaxis()
@@ -175,12 +234,12 @@ if __name__ == "__main__":
     f = os.path.join(os.path.dirname(__file__), 'data/naca0018at7.cp')
     data_lol = np.loadtxt(f, delimiter=',', dtype=float).T
 
-    fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
+    fig, ax = plt.subplots(figsize=(6, 5), dpi=100)
     ax.set_xlim(0.0, 1.0)
     ax.set_ylim(-3, 1.3)
 
     ax.set_title("Theorical $C_{p}$ with $AOA = 7^\circ$ vs. data")
-    ax.set_xlabel('x position in the airfoil')
+    ax.set_xlabel(r'$x/c$ position in the airfoil')
     ax.set_ylabel('$C_{p}$')
 
     ax.invert_yaxis()
@@ -191,7 +250,7 @@ if __name__ == "__main__":
     ax.plot(tunel_data[0], cpl, 'r.--', label='lower')
 
     l = [0, 7, 14, 21]
-    i = 0
+    i = 3
 
     ii = int(data_lol.shape[1] / 2)
     ax.plot(data_lol[0, ii::], data_lol[1, ii:0:-1], 'k--', label='theo')
@@ -200,9 +259,22 @@ if __name__ == "__main__":
     ax.legend(loc='upper right')
 
     plt.savefig(os.path.join(os.path.dirname(__file__),
-                'plots/ccompared-cp-at-aoa{0}'.format(i) + '.png'))
+                'plots/compared-cp-at-aoa{0}'.format(21) + '.png'))
 
-    plt.show()
+    l = [0, 7, 14, 21]
+    cl_a = []
+
+    for i in l:
+        cpu, cpl = calculate_cp(tunel_data[l.index(i) + 1],
+                   tunel_data[l.index(i) + 5], inf_data[l.index(i) + 5])
+
+        cl_a.append(calculate_cl(tunel_data[0], cpu, cpl, i))
+
+    plot_cla(l, cl_a)
+    plt.savefig(os.path.join(os.path.dirname(__file__),
+                'plots/cl-alpha' + '.png'))
+
+    #plt.show()
 
 #else:
 #    plt.ion()
