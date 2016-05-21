@@ -18,7 +18,7 @@ def plot_voltaje(x, yu, yl, aoa):
 
 class VoltagePlot(object):
     def __init__(self):
-        self.fig, self.ax = plt.subplots(figsize=(6, 5), dpi=100)
+        self.fig, self.ax = plt.subplots(figsize=(6, 6), dpi=10000)
 
     def plot(self, x, yu, yl, aoa):
         lines = []
@@ -27,8 +27,8 @@ class VoltagePlot(object):
         self.ax.set_ylim(0, 15)
 
         self.ax.set_title('Voltages with $AOA = {0}^\circ$'.format(aoa))
-        self.ax.set_xlabel(r'$x/c$ position in the airfoil')
-        self.ax.set_ylabel('voltage meassured')
+        self.ax.set_xlabel(r'$x/c$')
+        self.ax.set_ylabel('voltage meassured (calibrated)')
 
         self.ax.grid()
 
@@ -48,7 +48,7 @@ def plot_cp(x, cpu, cpl, aoa):
 
 class CpPlot(object):
     def __init__(self):
-        self.fig = plt.figure(figsize=(6, 7), dpi=100)
+        self.fig = plt.figure(figsize=(6, 7), dpi=10000)
 
         c = 0.05
         self.left, self.width = 0.15 , 0.8
@@ -72,9 +72,9 @@ class CpPlot(object):
         self.ax1.set_xlim(0, 1)
         self.ax1.set_ylim(1, -4)
 
-        self.ax1.set_title("$C_{p}$ at $AOA = %s^\circ$" % (aoa))
+        self.ax1.set_title("Experimental $C_{p}$ at $AOA = %s^\circ$" % (aoa))
         self.ax1.set_ylabel('$C_{p}$')
-        self.ax1.set_xlabel(r'$x/c$ position in the airfoil')
+        self.ax1.set_xlabel(r'$x/c$')
 
         self.ax1.set_xticks(np.arange(0, 11, 2)/10)
         self.ax1.grid()
@@ -117,7 +117,7 @@ def plot_cla(aoa, cl, re):
 
 class ClaPlot(object):
     def __init__(self):
-        self.fig, self.ax = plt.subplots(figsize=(6, 5), dpi=100)
+        self.fig, self.ax = plt.subplots(figsize=(6, 6), dpi=10000)
 
     def plot(self, aoa, cl, re):
         lines = []
@@ -135,18 +135,23 @@ class ClaPlot(object):
         self.ax.set_ylim(-0.5, 1.7)
         self.ax.set_xlim(-5, 22)
 
-        self.ax.set_title(r'$c_{l}-\alpha$')
+        self.ax.set_title(r'$c_{l}-\alpha$ numerical vs. experimental data')
         self.ax.set_xlabel('Angle of attack')
-        self.ax.set_ylabel(r'$c_{l}$')
+        self.ax.set_ylabel(r'$c_{l}$', size=15)
 
         self.ax.grid()
 
-        l, = self.ax.plot(xx, p(xx), 'g-')
+        l, = self.ax.plot(xx, p(xx), 'g-', linewidth=3)
         lines.append(l)
-        l, = self.ax.plot(aoa, cl, 'o', label='experimental $c_{l}$')
+        l, = self.ax.plot(xx, 2 * np.pi * xx * np.pi / 180  , 'r--',
+                          linewidth=2,
+                          label=r'theoretical $(c_{l}=2\pi\alpha)$')
         lines.append(l)
-        l, = self.ax.plot(data_atools[0], data_atools[1], 'k--',
-                          label=r'numerical at $Re = {0}$'.format(re))
+        l, = self.ax.plot(data_atools[0], data_atools[1], 'k--', linewidth=2.5,
+                          label=r'numerical $(Re = {0})$'.format(re))
+        lines.append(l)
+        l, = self.ax.plot(aoa, cl, 'o', markersize=10,
+                          label='experimental $c_{l}$')
         lines.append(l)
 
         self.ax.legend(loc='lower right')
@@ -160,7 +165,7 @@ def plot_cp_compared(x, cpu, cpl, aoa, re):
 class ComparedPlot(object):
 
     def __init__(self):
-        self.fig, self.ax = plt.subplots(figsize=(6, 7), dpi=100)
+        self.fig, self.ax = plt.subplots(figsize=(6, 7), dpi=10000)
 
     def plot(self, x, cpu, cpl, aoa, re='6e+6'):
         lines = []
@@ -175,11 +180,11 @@ class ComparedPlot(object):
         if aoa == 0:
             self.ax.set_ylim(-4, 1.5)
         else:
-            self.ax.set_ylim(np.amin(numerical_data[1]) - 0.3, 1.5)
+            self.ax.set_ylim(np.amin(numerical_data[1]) - 0.4, 1.5)
 
-        self.ax.set_title("Theorical $C_{p}$ with $AOA = %d^\circ$ vs. data"
+        self.ax.set_title("$C_{p}$ at $AOA = %d^\circ$"
                           % (aoa))
-        self.ax.set_xlabel(r'$x/c$ position in the airfoil')
+        self.ax.set_xlabel(r'$x/c$')
         self.ax.set_ylabel('$C_{p}$')
 
         self.ax.invert_yaxis()
@@ -196,7 +201,7 @@ class ComparedPlot(object):
         ii = int(numerical_data.shape[1] / 2)
         l, = self.ax.plot(numerical_data[0, ii::], numerical_data[1, ii:0:-1],
                           color='k', linestyle='-', linewidth=0.5,
-                          label=r'numerical at $Re = {0}$'.format(re))
+                          label=r'numerical $(Re = {0})$'.format(re))
         lines.append(l)
         l, = self.ax.plot(numerical_data[0, ii::], numerical_data[1, ii::],
                           color='k', linestyle='-', linewidth=0.5)

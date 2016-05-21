@@ -61,7 +61,7 @@ def comment_firts_lines(file_path, n_lines=12):
             f.write('#' + line)
         f.writelines(lines[n_lines::])
 
-def get_airfoil_data(re='3e+5'):
+def get_airfoil_data(re='6e+5'):
     xfoil_path = '/Applications/Xfoil.app/Contents/Resources/xfoil'
 
 
@@ -72,7 +72,7 @@ def get_airfoil_data(re='3e+5'):
                 'g',
                 '',
                 'oper',
-                'iter 600',
+                'iter 500',
                 're ' + re,
                 'visc']
 

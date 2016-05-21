@@ -26,7 +26,6 @@ if __name__ == "__main__":
     tunel_data[1::] -= offset
     inf_data -= offset
 
-
     # plotting voltages for different AOA
     aoa = [0, 7, 14, 21]
 
@@ -49,7 +48,7 @@ if __name__ == "__main__":
                     'plots/cp-at-aoa{0}'.format(i) + '.png'))
 
     # get airfoil data using Xfoil for a given Reynolds number
-    re = '9e+6' # choosen Reynolds number
+    re = '5e+5' # choosen Reynolds number, '3.7e+4' is the real estimation
     get_airfoil_data(re)
 
     # plotting cp vs. alpha
@@ -59,6 +58,7 @@ if __name__ == "__main__":
     for i in aoa:
         cpu, cpl = calculate_cp(tunel_data[aoa.index(i) + 1],
                    tunel_data[aoa.index(i) + 5], inf_data[aoa.index(i) + 5])
+        plot_cp_compared(tunel_data[0], cpu, cpl, i, re)
         cl_a.append(calculate_cl(tunel_data[0], cpu, cpl, i))
 
     plot_cla(aoa, cl_a, re)
