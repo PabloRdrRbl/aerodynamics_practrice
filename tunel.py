@@ -48,7 +48,7 @@ if __name__ == "__main__":
                     'plots/cp-at-aoa{0}'.format(i) + '.eps'))
 
     # get airfoil data using Xfoil for a given Reynolds number
-    re = '5e+5' # choosen Reynolds number, '3.7e+4' is the real estimation
+    re = '4e+5' # choosen Reynolds number, '3.7e+4' is the real estimation
     get_airfoil_data(re)
 
     # plotting cp vs. alpha
@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
         plot_cp_compared(tunel_data[0], cpu, cpl, i, re)
         plt.savefig(os.path.join(os.path.dirname(__file__),
-                    'plots/comapared-cp-at-aoa{0}'.format(i) + '.eps'))
+                    'plots/compared-cp-at-aoa{0}'.format(i) + '.eps'))
 
     #plt.show()
 
