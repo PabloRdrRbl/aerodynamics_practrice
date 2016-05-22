@@ -120,7 +120,8 @@ The transducer provides the transformation of pressure differences between the t
 
 \section{Data analysis}
 
-\subsection{Analysis of the experimental voltages and calculation of the pressure coefficients}
+\subsection{Analysis of the experimental voltages and \\
+calculation of the pressure coefficients}
 
 As explained above, the data obtained in the wind tunnel is the voltage that the transducer returns. Since we want pressure differences, we must process our data.
 
@@ -217,7 +218,7 @@ Where $i$ are the pressure taps on each surface and $n$ the sum of them.
 
 As stated above, the pressure coefficient plots are accompanied with the numerical solution obtained using Xfoil. When we try to get this computational solution we need to set the Reynolds number of the wind tunnel:
 
-\begin{equation} Re = \frac{inertial forces}{viscous forces}  = \frac{\rho U_{\infty} L}{\mu} \end{equation}
+\begin{equation} Re = \frac{inertial \ forces}{viscous \ forces}  = \frac{\rho U_{\infty} L}{\mu} \end{equation}
 
 Assuming ISA conditions at the altitude of León ($\SI{837}{\meter}$), knowing that the airfoil's chord is $c = \SI{0.25}{\meter}$ and measuring the freestream velocity using the pitot probe (port number 40), we get a Reynolds number of the order of magnitude of $Re = \num{3.7e4}$. The problem is that Xfoil does not converge at a low Reynolds number such as this \cite{Drela:low-reynolds}, so it has been necessary to increase its magnitude to make it happen. 
 
