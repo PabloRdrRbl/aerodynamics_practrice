@@ -33,7 +33,7 @@ if __name__ == "__main__":
         plot_voltaje(tunel_data[0], tunel_data[aoa.index(i) + 1],
                      tunel_data[aoa.index(i) + 5], i)
         plt.savefig(os.path.join(os.path.dirname(__file__),
-                    'plots/voltage-at-aoa{0}'.format(i) + '.png'))
+                    'plots/voltage-at-aoa{0}'.format(i) + '.eps'))
 
 
     # plotting cp for different AOA
@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
         plot_cp(tunel_data[0], cpu, cpl, i)
         plt.savefig(os.path.join(os.path.dirname(__file__),
-                    'plots/cp-at-aoa{0}'.format(i) + '.png'))
+                    'plots/cp-at-aoa{0}'.format(i) + '.eps'))
 
     # get airfoil data using Xfoil for a given Reynolds number
     re = '5e+5' # choosen Reynolds number, '3.7e+4' is the real estimation
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     plot_cla(aoa, cl_a, re)
     plt.savefig(os.path.join(os.path.dirname(__file__),
-                'plots/cl-alpha' + '.png'))
+                'plots/cl-alpha' + '.eps'))
 
     # plotting experimental cp compared with numerical
     aoa = [0, 7, 14, 21]
@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
         plot_cp_compared(tunel_data[0], cpu, cpl, i, re)
         plt.savefig(os.path.join(os.path.dirname(__file__),
-                    'plots/comapared-cp-at-aoa{0}'.format(i) + '.png'))
+                    'plots/comapared-cp-at-aoa{0}'.format(i) + '.eps'))
 
     #plt.show()
 

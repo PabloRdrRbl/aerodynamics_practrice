@@ -165,7 +165,7 @@ def plot_cp_compared(x, cpu, cpl, aoa, re):
 class ComparedPlot(object):
 
     def __init__(self):
-        self.fig, self.ax = plt.subplots(figsize=(6, 7), dpi=10000)
+        self.fig, self.ax = plt.subplots(figsize=(6, 6), dpi=100)
 
     def plot(self, x, cpu, cpl, aoa, re='6e+6'):
         lines = []
