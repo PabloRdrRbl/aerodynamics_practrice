@@ -17,7 +17,7 @@ In the repo you can find:
 while writing the report: please try to write something in LaTeX! If you don't want to install anything on your desktop use [Overleaf](https://www.overleaf.com/), it's a great tool!
 * And, the [**Python code**](https://github.com/PabloRdrRbl/aerodynamics_practrice/tree/master/scripts) (you must love Python at this point, in case you don't: learn Python!)
 I've used Python to process the tunnel data and produce some nice and ready to publish plots using [matplotlib](http://matplotlib.org), furthermore I've managed to connect Python with
-[Xfoil](http://web.mit.edu/drela/Public/web/xfoil/) (nice pice of software by the guru Mark Drela) and automate the entire workflow when I wanted to change some parameter (Reynolds numeber was the most recurrent).
+[Xfoil](http://web.mit.edu/drela/Public/web/xfoil/) (nice pice of software by the guru Mark Drela) and automate the entire workflow when I wanted to change some parameter (Reynolds number was the most recurrent).
 
 Feel free to contact me and improve my work via pull request :)
 
