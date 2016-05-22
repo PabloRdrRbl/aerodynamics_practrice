@@ -23,6 +23,8 @@ Feel free to contact me and improve my work via pull request :)
 
 
 Contact:
-** prodrr05@estudiantes.unileon.es
-** pablordrrbl@gmail.com
 
+
+prodrr05@estudiantes.unileon.es
+
+pablordrrbl@gmail.com
