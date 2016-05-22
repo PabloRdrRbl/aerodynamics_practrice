@@ -6,7 +6,7 @@ This repo is the home of all the files involved in my Aerodynacmics class **wind
     of the NACA 0018 airfoil. Throughout this report the pressure distribution over the airfoil 
     surface will be analyzed at different angles of attack in order to get the relationship between
     its lift coefficient and the angle of attack, after that we could obtain the lift produced by the
-    airfoil or a scaled real wing (thanks to the non-dimensional analysis). Additionally, tunnel data 
+    airfoil or a scaled real wing (thanks to the nondimensional analysis). Additionally, tunnel data 
     are compared with the numerical ones provided by the popular software tool Xfoil, thus is possible
     to carry out a comparison between the numerical model and the wind tunnel data.
 
